@@ -81,13 +81,17 @@ module ROM
 
         # @api private
         def foreign_keys_from_database(gateway, schema, attributes)
-          dataset = schema.name.dataset
+          if gateway.connection.supports_foreign_key_parsing?
+            dataset = schema.name.dataset
 
-          gateway.connection.foreign_key_list(dataset).map { |columns:, table:, key:, **rest|
-            attrs = columns.map { |name| attributes[name] }
+            gateway.connection.foreign_key_list(dataset).map { |columns:, table:, key:, **rest|
+              attrs = columns.map { |name| attributes[name] }
 
-            SQL::ForeignKey.new(attrs, table, parent_keys: key)
-          }.to_set
+              SQL::ForeignKey.new(attrs, table, parent_keys: key)
+            }.to_set
+          else
+            EMPTY_SET
+          end
         end
 
         # @api private
