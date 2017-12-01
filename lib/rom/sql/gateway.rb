@@ -78,11 +78,21 @@ module ROM
       # @api public
       def initialize(uri, options = EMPTY_HASH)
         @connection = connect(uri, options)
+        @database_schema = options.fetch(:schema) { nil }
+
         load_extensions(Array(options[:extensions]))
 
         @options = options
 
         super
+      end
+
+      def database_schema?
+        !@database_schema.nil?
+      end
+
+      def database_schema
+        @database_schema ||= nil
       end
 
       # Disconnect from the gateway's database
@@ -102,7 +112,11 @@ module ROM
       #
       # @api public
       def [](name)
-        connection[name]
+        if database_schema?
+          connection[name][database_schema]
+        else
+          connection[name]
+        end
       end
 
       # Setup a logger
@@ -134,7 +148,11 @@ module ROM
       #
       # @api public
       def dataset(name)
-        connection[name]
+        if database_schema?
+          connection[name][database_schema]
+        else
+          connection[name]
+        end
       end
 
       # Check if a dataset exists
@@ -166,7 +184,7 @@ module ROM
       #
       # @api public
       def schema
-        @schema ||= connection.tables
+        @schema ||= connection.tables(schema: database_schema)
       end
 
       # Underlying database type
