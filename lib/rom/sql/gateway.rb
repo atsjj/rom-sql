@@ -77,6 +77,7 @@ module ROM
       #
       # @api public
       def initialize(uri, options = EMPTY_HASH)
+        binding.pry
         @connection = connect(uri, options)
         @database_schema = options.fetch(:schema) { nil }
 
